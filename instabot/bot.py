@@ -22,7 +22,10 @@ class InstaBot(object):
     base_url = 'https://www.instagram.com'
 
     def __init__(self, implicit_wait=20, page_load_timeout=30):
-        Xvfb().start()
+        try:
+            Xvfb().start()
+        except EnvironmentError:
+            pass
 
         options = ChromeOptions()
         options.add_argument('--no-sandbox')
