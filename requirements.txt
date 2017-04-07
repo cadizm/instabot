@@ -1,0 +1,7 @@
+selenium==3.3.3
+PyVirtualDisplay==0.2.1
+requests==2.13.0
+ansible==2.2.2.0
+ipdb==0.8.1
+ipdbplugin==1.4.2
+ipython==4.0.0
