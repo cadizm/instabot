@@ -16,8 +16,15 @@ logging.basicConfig(
 if __name__ == '__main__':
     with closing(InstaBot()) as bot:
         bot.login()
-        bot.follow_users([
-            'beatcinema',
-            'missbmai',
-            'eatatpot',
-            ])
+
+        if False:
+            bot.follow_users([
+                'beatcinema',
+                'eatatpot',
+                ])
+
+        if True:
+            bot.like_tags([
+                'ootd',
+                ],
+                num=100)

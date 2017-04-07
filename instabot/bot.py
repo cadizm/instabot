@@ -1,10 +1,12 @@
 
 import os
+import random
 import time
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.common.keys import Keys
 
 from .exceptions import *
 import settings
@@ -29,7 +31,23 @@ class InstaBot(object):
         except:
             pass
 
+    def login(self, username=None, password=None):
+        username = username or os.environ.get('INSTABOT_IG_USERNAME')
+        password = password or os.environ.get('INSTABOT_IG_PASSWORD')
+
+        if not username or not password:
+            raise InvalidUsernamePasswordError
+
+        self.browser.get(self.base_url)
+        self.browser.find_element_by_xpath(xpath.login).click()
+        self.browser.find_element_by_xpath(xpath.username).send_keys(username)
+        self.browser.find_element_by_xpath(xpath.password).send_keys(password)
+        self.browser.find_element_by_xpath(xpath.submit_login).click()
+
     def follow_users(self, usernames=None):
+        """
+        Follow all the users (don't pass `@')
+        """
         for username in usernames:
             time.sleep(settings.FOLLOW_USER_SLEEP_SEC)
             self.browser.get('%s/%s' % (self.base_url, username))
@@ -44,15 +62,46 @@ class InstaBot(object):
             except NoSuchElementException as e:
                 logger.error(e)
 
-    def login(self, username=None, password=None):
-        username = username or os.environ.get('INSTABOT_IG_USERNAME')
-        password = password or os.environ.get('INSTABOT_IG_PASSWORD')
+    # TODO: add commenting to posts liked
+    def like_tags(self, tags, num=100):
+        """
+        Like `num' number of posts when exploring hashtag (don't pass `#')
 
-        if not username or not password:
-            raise InvalidUsernamePasswordError
+        A random sample of posts will be liked for a given tag
+        """
+        for tag in tags:
+            time.sleep(settings.LIKE_TAG_SLEEP_SEC)
+            self.browser.get('%s/explore/tags/%s/' % (self.base_url, tag))
+            try:
+                time.sleep(settings.LIKE_TAG_SLEEP_SEC)
+                self._load_more(max(1, num/10))
 
-        self.browser.get(self.base_url)
-        self.browser.find_element_by_xpath(xpath.login).click()
-        self.browser.find_element_by_xpath(xpath.username).send_keys(username)
-        self.browser.find_element_by_xpath(xpath.password).send_keys(password)
-        self.browser.find_element_by_xpath(xpath.submit_login).click()
+                # get the actual url's of images to like
+                main = self.browser.find_element_by_tag_name('main')
+                links = main.find_elements_by_tag_name('a')
+                urls = [link.get_attribute('href') for link in links]
+
+                for url in random.sample(urls, min(num, len(links))):
+                    time.sleep(settings.LIKE_TAG_SLEEP_SEC)
+                    self.browser.get(url)
+                    elem = self.browser.find_element_by_xpath(xpath.like)
+                    if elem.text.lower() == 'like':
+                        elem.click()
+                        logger.info('Liked %s' % url)
+
+            except NoSuchElementException as e:
+                logger.error(e)
+
+    def _load_more(self, n=10):
+        """
+        Press "end" key `n' times to load more images
+        """
+        try:
+            self.browser.find_element_by_xpath(xpath.load_more).click()
+        except NoSuchElementException as e:
+            logger.error(e)
+
+        body = self.browser.find_element_by_tag_name('body')
+        for _ in range(n):
+            body.send_keys(Keys.END)
+            time.sleep(settings.LOAD_MORE_SLEEP_SEC)
