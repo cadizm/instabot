@@ -3,6 +3,8 @@ import os
 import random
 import time
 
+from xvfbwrapper import Xvfb
+
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options as ChromeOptions
@@ -20,7 +22,13 @@ class InstaBot(object):
     base_url = 'https://www.instagram.com'
 
     def __init__(self, implicit_wait=20, page_load_timeout=30):
-        self.browser = Chrome(settings.CHROMEDRIVER_PATH, chrome_options=ChromeOptions())
+        Xvfb().start()
+
+        options = ChromeOptions()
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-setuid-sandbox')
+
+        self.browser = Chrome(settings.CHROMEDRIVER_PATH, chrome_options=options)
         self.browser.implicitly_wait(implicit_wait)
         self.browser.set_page_load_timeout(page_load_timeout)
 
