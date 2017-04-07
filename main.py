@@ -1,5 +1,6 @@
 
 from contextlib import closing
+import random
 import time
 
 from instabot import InstaBot
@@ -14,17 +15,11 @@ logging.basicConfig(
 
 
 if __name__ == '__main__':
+    tags = [
+        'ootd',
+    ]
+
     with closing(InstaBot()) as bot:
         bot.login()
-
-        if False:
-            bot.follow_users([
-                'beatcinema',
-                'eatatpot',
-                ])
-
-        if True:
-            bot.like_tags([
-                'ootd',
-                ],
-                num=100)
+        usernames = bot.like_tags(tags, num=5)
+        bot.follow_users(random.sample(usernames, len(usernames)/2))

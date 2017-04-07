@@ -24,6 +24,9 @@ class InstaBot(object):
         self.browser.implicitly_wait(implicit_wait)
         self.browser.set_page_load_timeout(page_load_timeout)
 
+        self.liked = 0
+        self.followed = 0
+
     def close(self):
         try:
             self.browser.delete_all_cookies()
@@ -55,9 +58,10 @@ class InstaBot(object):
                 elem = self.browser.find_element_by_xpath(xpath.follow)
                 if elem.text.lower() != 'following':
                     elem.click()
-                    logger.info('Started following %s' % username)
+                    self.followed += 1
+                    logger.info("Started following %s" % username)
                 else:
-                    logger.info('Already following %s' % username)
+                    logger.info("Already following %s" % username)
 
             except NoSuchElementException as e:
                 logger.error(e)
@@ -68,29 +72,43 @@ class InstaBot(object):
         Like `num' number of posts when exploring hashtag (don't pass `#')
 
         A random sample of posts will be liked for a given tag
+        Return the usernames of the posts liked
         """
+        usernames = []
         for tag in tags:
             time.sleep(settings.LIKE_TAG_SLEEP_SEC)
             self.browser.get('%s/explore/tags/%s/' % (self.base_url, tag))
+            time.sleep(settings.LIKE_TAG_SLEEP_SEC)
+            self._load_more(max(1, num/10))
+
+            # get the actual url's of images to like
             try:
-                time.sleep(settings.LIKE_TAG_SLEEP_SEC)
-                self._load_more(max(1, num/10))
-
-                # get the actual url's of images to like
                 main = self.browser.find_element_by_tag_name('main')
-                links = main.find_elements_by_tag_name('a')
-                urls = [link.get_attribute('href') for link in links]
-
-                for url in random.sample(urls, min(num, len(links))):
-                    time.sleep(settings.LIKE_TAG_SLEEP_SEC)
-                    self.browser.get(url)
-                    elem = self.browser.find_element_by_xpath(xpath.like)
-                    if elem.text.lower() == 'like':
-                        elem.click()
-                        logger.info('Liked %s' % url)
-
             except NoSuchElementException as e:
                 logger.error(e)
+
+            links = main.find_elements_by_tag_name('a')
+            urls = [link.get_attribute('href') for link in links]
+
+            sample = random.sample(urls, min(num, len(links)))
+            logger.info("Like sample size: %d" % len(sample))
+            for url in sample:
+                time.sleep(settings.LIKE_TAG_SLEEP_SEC)
+                try:
+                    self.browser.get(url)
+                    elem = self.browser.find_element_by_xpath(xpath.like)
+                    username = self.browser.find_element_by_xpath(xpath.profile_username).text
+                except NoSuchElementException as e:
+                    logger.error(e)
+                    continue
+                if elem.text.lower() == 'like':
+                    elem.click()
+                    self.liked += 1
+                    usernames.append(username)
+
+            logger.info("Liked %d/%d" % (self.liked, len(sample)))
+
+        return usernames
 
     def _load_more(self, n=10):
         """
