@@ -86,6 +86,7 @@ class InstaBot(object):
         Return the usernames of the posts liked
         """
         usernames = []
+        total_samples = 0
         for tag in tags:
             time.sleep(settings.LIKE_TAG_SLEEP_SEC)
             self.browser.get('%s/explore/tags/%s/' % (self.base_url, tag))
@@ -102,6 +103,7 @@ class InstaBot(object):
             urls = [link.get_attribute('href') for link in links]
 
             sample = random.sample(urls, min(num, len(links)))
+            total_samples += len(sample)
             logger.info("Like sample size: %d" % len(sample))
             for url in sample:
                 time.sleep(settings.LIKE_TAG_SLEEP_SEC)
@@ -117,7 +119,7 @@ class InstaBot(object):
                     self.liked += 1
                     usernames.append(username)
 
-            logger.info("Liked %d/%d" % (self.liked, len(sample)))
+            logger.info("Liked %d/%d" % (self.liked, total_samples))
 
         return usernames
 

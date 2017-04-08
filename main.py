@@ -17,15 +17,30 @@ logging.basicConfig(
 if __name__ == '__main__':
     tags = [
         'ootd',
-        'bucketlist',
+        'ootn',
         'fashion',
         'fashionista',
-        'picoftheday',
-        'photography',
+        'fashiondiaries',
+        'fashionblogger',
+        'fashionphotography',
+        'fashionphotographer',
+        'lookbook',
         'wydwt',
         'style',
         'styleblogger',
         'instafashion',
+        'igdaily',
+        'picoftheday',
+        'potd',
+        'photooftheday',
+        'photoshoot',
+        'model',
+        'models',
+        'vsco',
+        'vscocam',
+        'shoot2kill',
+        'photography',
+        'afterhours',
     ]
 
     with closing(InstaBot()) as bot:
