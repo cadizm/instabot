@@ -112,7 +112,7 @@ class InstaBot(object):
                     elem = self.browser.find_element_by_xpath(xpath.like)
                     username = self.browser.find_element_by_xpath(xpath.profile_username).text
                 except NoSuchElementException as e:
-                    logger.error(e)
+                    logger.debug(e)
                     continue
                 if elem.text.lower() == 'like':
                     elem.click()
