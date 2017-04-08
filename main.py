@@ -45,5 +45,6 @@ if __name__ == '__main__':
 
     with closing(InstaBot()) as bot:
         bot.login()
-        usernames = bot.like_tags(tags, num=100)
-        bot.follow_users(random.sample(usernames, len(usernames)/2))
+        for tag in tags:
+            usernames = bot.like_tags([tag], num=100)
+            bot.follow_users(random.sample(usernames, len(usernames)/2))

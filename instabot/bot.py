@@ -8,7 +8,10 @@ from xvfbwrapper import Xvfb
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 from .exceptions import *
 import settings
@@ -31,17 +34,23 @@ class InstaBot(object):
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-setuid-sandbox')
 
-        self.browser = Chrome(settings.CHROMEDRIVER_PATH, chrome_options=options)
-        self.browser.implicitly_wait(implicit_wait)
-        self.browser.set_page_load_timeout(page_load_timeout)
+        self.driver = Chrome(settings.CHROMEDRIVER_PATH, chrome_options=options)
+        self.driver.implicitly_wait(implicit_wait)
+        self.driver.set_page_load_timeout(page_load_timeout)
+
+        self.wait = WebDriverWait(self.driver, settings.WEB_DRIVER_WAIT_SEC)
 
         self.liked = 0
         self.followed = 0
 
     def close(self):
         try:
-            self.browser.delete_all_cookies()
-            self.browser.close()
+            self.driver.delete_all_cookies()
+            self.driver.close()
+
+            from subprocess import call
+            call(['killall', 'Xvfb'])
+            call(['killall', 'chromedriver'])
         except:
             pass
 
@@ -52,11 +61,11 @@ class InstaBot(object):
         if not username or not password:
             raise InvalidUsernamePasswordError
 
-        self.browser.get(self.base_url)
-        self.browser.find_element_by_xpath(xpath.login).click()
-        self.browser.find_element_by_xpath(xpath.username).send_keys(username)
-        self.browser.find_element_by_xpath(xpath.password).send_keys(password)
-        self.browser.find_element_by_xpath(xpath.submit_login).click()
+        self.driver.get(self.base_url)
+        self.driver.find_element_by_xpath(xpath.login).click()
+        self.driver.find_element_by_xpath(xpath.username).send_keys(username)
+        self.driver.find_element_by_xpath(xpath.password).send_keys(password)
+        self.driver.find_element_by_xpath(xpath.submit_login).click()
 
     def follow_users(self, usernames=None):
         """
@@ -64,9 +73,9 @@ class InstaBot(object):
         """
         for username in usernames:
             time.sleep(settings.FOLLOW_USER_SLEEP_SEC)
-            self.browser.get('%s/%s' % (self.base_url, username))
+            self.driver.get('%s/%s' % (self.base_url, username))
             try:
-                elem = self.browser.find_element_by_xpath(xpath.follow)
+                elem = self.wait.until(EC.element_to_be_clickable((By.XPATH, xpath.follow)))
                 if elem.text.lower() != 'following':
                     elem.click()
                     self.followed += 1
@@ -75,9 +84,11 @@ class InstaBot(object):
                     logger.info("Already following %s" % username)
 
             except NoSuchElementException as e:
+                logger.debug(e)
+
+            except Exception as e:
                 logger.error(e)
 
-    # TODO: add commenting to posts liked
     def like_tags(self, tags, num=100):
         """
         Like `num' number of posts when exploring hashtag (don't pass `#')
@@ -89,15 +100,16 @@ class InstaBot(object):
         total_samples = 0
         for tag in tags:
             time.sleep(settings.LIKE_TAG_SLEEP_SEC)
-            self.browser.get('%s/explore/tags/%s/' % (self.base_url, tag))
+            self.driver.get('%s/explore/tags/%s/' % (self.base_url, tag))
             time.sleep(settings.LIKE_TAG_SLEEP_SEC)
             self._load_more(max(1, num/10))
 
             # get the actual url's of images to like
             try:
-                main = self.browser.find_element_by_tag_name('main')
+                main = self.driver.find_element_by_tag_name('main')
             except NoSuchElementException as e:
-                logger.error(e)
+                logger.debug(e)
+                continue
 
             links = main.find_elements_by_tag_name('a')
             urls = [link.get_attribute('href') for link in links]
@@ -108,11 +120,14 @@ class InstaBot(object):
             for url in sample:
                 time.sleep(settings.LIKE_TAG_SLEEP_SEC)
                 try:
-                    self.browser.get(url)
-                    elem = self.browser.find_element_by_xpath(xpath.like)
-                    username = self.browser.find_element_by_xpath(xpath.profile_username).text
+                    self.driver.get(url)
+                    elem = self.wait.until(EC.element_to_be_clickable((By.XPATH, xpath.like)))
+                    username = self.driver.find_element_by_xpath(xpath.profile_username).text
                 except NoSuchElementException as e:
                     logger.debug(e)
+                    continue
+                except Exception as e:
+                    logger.error(e)
                     continue
                 if elem.text.lower() == 'like':
                     elem.click()
@@ -128,11 +143,11 @@ class InstaBot(object):
         Press "end" key `n' times to load more images
         """
         try:
-            self.browser.find_element_by_xpath(xpath.load_more).click()
+            self.driver.find_element_by_xpath(xpath.load_more).click()
         except NoSuchElementException as e:
             logger.error(e)
 
-        body = self.browser.find_element_by_tag_name('body')
+        body = self.driver.find_element_by_tag_name('body')
         for _ in range(n):
             body.send_keys(Keys.END)
             time.sleep(settings.LOAD_MORE_SLEEP_SEC)
