@@ -123,16 +123,17 @@ class InstaBot(object):
                     self.driver.get(url)
                     elem = self.wait.until(EC.element_to_be_clickable((By.XPATH, xpath.like)))
                     username = self.driver.find_element_by_xpath(xpath.profile_username).text
+
+                    if elem.text.lower() == 'like':
+                        elem.click()
+                        self.liked += 1
+                        usernames.append(username)
+
                 except NoSuchElementException as e:
                     logger.debug(e)
-                    continue
+
                 except Exception as e:
                     logger.error(e)
-                    continue
-                if elem.text.lower() == 'like':
-                    elem.click()
-                    self.liked += 1
-                    usernames.append(username)
 
             logger.info("Liked %d/%d" % (self.liked, total_samples))
 

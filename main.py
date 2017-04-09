@@ -43,6 +43,8 @@ if __name__ == '__main__':
         'afterhours',
     ]
 
+    random.shuffle(tags)
+
     with closing(InstaBot()) as bot:
         bot.login()
         for tag in tags:
