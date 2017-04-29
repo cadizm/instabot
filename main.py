@@ -3,6 +3,8 @@ from contextlib import closing
 import random
 import time
 
+from selenium.common.exceptions import WebDriverException
+
 from instabot import InstaBot
 
 import logging
@@ -12,41 +14,35 @@ logging.basicConfig(
     format='%(asctime)s %(message)s',
     datefmt='%m/%d/%Y %I:%M:%S %p',
     )
+logger = logging.getLogger(__name__)
 
 
 if __name__ == '__main__':
     tags = [
-        'ootd',
-        'ootn',
-        'fashion',
-        'fashionista',
-        'fashiondiaries',
-        'fashionblogger',
-        'fashionphotography',
-        'fashionphotographer',
-        'lookbook',
-        'wydwt',
-        'style',
-        'styleblogger',
-        'instafashion',
+        'travel',
         'igdaily',
         'picoftheday',
         'potd',
         'photooftheday',
-        'photoshoot',
-        'model',
-        'models',
         'vsco',
         'vscocam',
-        'shoot2kill',
         'photography',
-        'afterhours',
+        'theta360',
+        'dji',
+        'mavicpro',
+        'snow',
+        'snowboarding',
+        'porsche',
+        'sigsauer',
     ]
 
     random.shuffle(tags)
 
-    with closing(InstaBot()) as bot:
-        bot.login()
-        for tag in tags:
-            usernames = bot.like_tags([tag], num=100)
-            bot.follow_users(random.sample(usernames, len(usernames)/2))
+    while True:
+        try:
+            with closing(InstaBot()) as bot:
+                bot.login()
+                for tag in tags:
+                    usernames = bot.like_tags([tag], num=100)
+        except WebDriverException as e:
+            logger.error(e)
