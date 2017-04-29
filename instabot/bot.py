@@ -41,6 +41,7 @@ class InstaBot(object):
         self.wait = WebDriverWait(self.driver, settings.WEB_DRIVER_WAIT_SEC)
 
         self.liked = 0
+        self.liked_total_samples = 0
         self.followed = 0
 
     def close(self):
@@ -60,6 +61,8 @@ class InstaBot(object):
 
         if not username or not password:
             raise InvalidUsernamePasswordError
+
+        logger.debug("Logging in as: %s" % username)
 
         self.driver.get(self.base_url)
         self.driver.find_element_by_xpath(xpath.login).click()
@@ -97,9 +100,9 @@ class InstaBot(object):
         Return the usernames of the posts liked
         """
         usernames = []
-        total_samples = 0
         for tag in tags:
             time.sleep(settings.LIKE_TAG_SLEEP_SEC)
+            logger.debug("Liking posts with tag: %s" % tag)
             self.driver.get('%s/explore/tags/%s/' % (self.base_url, tag))
             time.sleep(settings.LIKE_TAG_SLEEP_SEC)
             self._load_more(max(1, num/10))
@@ -115,7 +118,7 @@ class InstaBot(object):
             urls = [link.get_attribute('href') for link in links]
 
             sample = random.sample(urls, min(num, len(links)))
-            total_samples += len(sample)
+            self.liked_total_samples += len(sample)
             logger.info("Like sample size: %d" % len(sample))
             for url in sample:
                 time.sleep(settings.LIKE_TAG_SLEEP_SEC)
@@ -135,7 +138,7 @@ class InstaBot(object):
                 except Exception as e:
                     logger.error(e)
 
-            logger.info("Liked %d/%d" % (self.liked, total_samples))
+            logger.info("Liked %d/%d" % (self.liked, self.liked_total_samples))
 
         return usernames
 

@@ -10,8 +10,8 @@ from instabot import InstaBot
 import logging
 logging.basicConfig(
     filename='instabot.log',
-    level=logging.INFO,
-    format='%(asctime)s %(message)s',
+    level=logging.DEBUG,
+    format='%(asctime)s %(pathname)s:%(lineno)d %(message)s',
     datefmt='%m/%d/%Y %I:%M:%S %p',
     )
 logger = logging.getLogger(__name__)
