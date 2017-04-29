@@ -62,7 +62,7 @@ class InstaBot(object):
         if not username or not password:
             raise InvalidUsernamePasswordError
 
-        logger.debug("Logging in as: %s" % username)
+        logger.info("Logging in as: %s" % username)
 
         self.driver.get(self.base_url)
         self.driver.find_element_by_xpath(xpath.login).click()
@@ -87,7 +87,7 @@ class InstaBot(object):
                     logger.info("Already following %s" % username)
 
             except NoSuchElementException as e:
-                logger.debug(e)
+                logger.info(e)
 
             except Exception as e:
                 logger.error(e)
@@ -102,7 +102,7 @@ class InstaBot(object):
         usernames = []
         for tag in tags:
             time.sleep(settings.LIKE_TAG_SLEEP_SEC)
-            logger.debug("Liking posts with tag: %s" % tag)
+            logger.info("Liking posts with tag: %s" % tag)
             self.driver.get('%s/explore/tags/%s/' % (self.base_url, tag))
             time.sleep(settings.LIKE_TAG_SLEEP_SEC)
             self._load_more(max(1, num/10))
@@ -111,7 +111,7 @@ class InstaBot(object):
             try:
                 main = self.driver.find_element_by_tag_name('main')
             except NoSuchElementException as e:
-                logger.debug(e)
+                logger.info(e)
                 continue
 
             links = main.find_elements_by_tag_name('a')
@@ -133,7 +133,7 @@ class InstaBot(object):
                         usernames.append(username)
 
                 except NoSuchElementException as e:
-                    logger.debug(e)
+                    logger.info(e)
 
                 except Exception as e:
                     logger.error(e)
