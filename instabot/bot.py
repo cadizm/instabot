@@ -135,9 +135,6 @@ class InstaBot(object):
                 except NoSuchElementException as e:
                     logger.info(e)
 
-                except Exception as e:
-                    logger.error(e)
-
             logger.info("Liked %d/%d" % (self.liked, self.liked_total_samples))
 
         return usernames

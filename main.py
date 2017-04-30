@@ -44,5 +44,5 @@ if __name__ == '__main__':
                 bot.login()
                 for tag in tags:
                     usernames = bot.like_tags([tag], num=100)
-        except WebDriverException as e:
+        except Exception as e:
             logger.error(e)
