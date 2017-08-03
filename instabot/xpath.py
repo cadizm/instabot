@@ -1,7 +1,7 @@
 
 login = '//*[@id="react-root"]/section/main/article/div[2]/div[2]/p/a'
-username = '//*[@id="react-root"]/section/main/article/div[2]/div[1]/div/form/div[1]/input'
-password = '//*[@id="react-root"]/section/main/article/div[2]/div[1]/div/form/div[2]/input'
+username = '//*[@id="react-root"]/section/main/article/div[2]/div[1]/div/form/div[1]/div/input'
+password = '//*[@id="react-root"]/section/main/article/div[2]/div[1]/div/form/div[2]/div/input'
 submit_login = '//*[@id="react-root"]/section/main/article/div[2]/div[1]/div/form/span/button'
 follow = '//*[@id="react-root"]/section/main/article/header/div[2]/div[1]/span/span[1]/button'
 load_more = '//*[@id="react-root"]/section/main/article/div[2]/a'
