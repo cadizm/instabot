@@ -143,11 +143,6 @@ class InstaBot(object):
         """
         Press "end" key `n' times to load more images
         """
-        try:
-            self.driver.find_element_by_xpath(xpath.load_more).click()
-        except NoSuchElementException as e:
-            logger.error(e)
-
         body = self.driver.find_element_by_tag_name('body')
         for _ in range(n):
             body.send_keys(Keys.END)
