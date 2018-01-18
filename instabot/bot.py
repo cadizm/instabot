@@ -65,9 +65,9 @@ class InstaBot(object):
         logger.info("Logging in as: %s" % username)
 
         self.driver.get(self.base_url)
-        self.driver.find_element_by_xpath(xpath.login).click()
-        self.driver.find_element_by_xpath(xpath.username).send_keys(username)
-        self.driver.find_element_by_xpath(xpath.password).send_keys(password)
+        self.wait.until(EC.element_to_be_clickable((By.XPATH, xpath.login))).click()
+        self.driver.find_element_by_name('username').send_keys(username)
+        self.driver.find_element_by_name('password').send_keys(password)
         self.driver.find_element_by_xpath(xpath.submit_login).click()
 
     def follow_users(self, usernames=None):
@@ -124,13 +124,12 @@ class InstaBot(object):
                 time.sleep(settings.LIKE_TAG_SLEEP_SEC)
                 try:
                     self.driver.get(url)
-                    elem = self.wait.until(EC.element_to_be_clickable((By.XPATH, xpath.like)))
+                    elem = self.driver.find_element_by_link_text('Like')
                     username = self.driver.find_element_by_xpath(xpath.profile_username).text
 
-                    if elem.text.lower() == 'like':
-                        elem.click()
-                        self.liked += 1
-                        usernames.append(username)
+                    elem.click()
+                    self.liked += 1
+                    usernames.append(username)
 
                 except NoSuchElementException as e:
                     logger.info(e)
